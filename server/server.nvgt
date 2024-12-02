@@ -4,7 +4,7 @@
 #include"includes/net.nvgt"
 #include"includes/regex.nvgt"
 #include"includes/user.nvgt"
-string version="1.5";
+string version="1.6";
 string motd = "Welcome to the server!";
 timer svruptimer;
 file f;

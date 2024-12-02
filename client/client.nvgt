@@ -12,7 +12,7 @@ int menuscroll=1;
 string motd = "Welcome to the server.";
 string passc="rscs123";
 string name="noName"+random(0,9999);
-string version="1.5";
+string version="1.6";
 dynamic_menu_pro menu;
 sound_pool p;
 virtualizer v;

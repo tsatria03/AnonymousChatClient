@@ -322,7 +322,7 @@ send(users[target_index].peer_id, "PM from " + users[index].name + ": " + pm_mes
                     }
 else
 {
-                        send(event.peer_id, "User not found", 2, true);
+                        send(event.peer_id, "Pm failed. User not found", 2, true);
                     }
                 }
             }

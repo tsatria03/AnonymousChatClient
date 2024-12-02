@@ -1,0 +1,45 @@
+string[] history;
+int index=0;
+void add_chat(string what)
+{
+history.insert_last(what);
+speak(what);
+}
+void next_chat()
+{
+if(history.length()>0)
+{
+if(index<history.length()-1)
+{
+index+=1;
+speak(history[index]);
+}
+}
+}
+void prev_chat()
+{
+if(history.length()>0)
+{
+if(index>0)
+{
+index--;
+speak(history[index]);
+}
+}
+}
+void top_history()
+{
+if(history.length()>0)
+{
+index=0;
+speak(history[index]);
+}
+}
+void bottom_history()
+{
+if(history.length()>0)
+{
+index=history.length()-1;
+speak(history[index]);
+}
+}

@@ -1,0 +1,339 @@
+bool encryption=true;
+int filterstuff=1;
+int port=25562;
+int userlimit=200;
+int writetime=10000;
+timer writetimer;
+network net;
+network_event event;
+bool send(int peer_id,string packet,int channel,bool reliable)
+{
+if(encryption)
+{
+packet=string_encrypt(packet,"rscs123");
+}
+if(reliable)
+{
+return net.send_reliable(peer_id,packet,channel);
+}
+else
+{
+return net.send_unreliable(peer_id,packet,channel);
+}
+}
+string get_event_message()
+{
+if(encryption) return string_decrypt(event.message, "rscs123");
+else return event.message;
+}
+string format_uptime(int uptime_seconds)
+{
+    int days = uptime_seconds / 86400;
+    int hours = (uptime_seconds % 86400) / 3600;
+    int minutes = (uptime_seconds % 3600) / 60;
+    int seconds = uptime_seconds % 60;
+    string uptime_message = "Server Uptime: ";
+    if (days > 0)
+    {
+        uptime_message += string(days) + " days, ";
+    }
+    if (hours > 0 || days > 0)
+    {
+        uptime_message += string(hours) + " hours, ";
+    }
+    if (minutes > 0 || hours > 0 || days > 0)
+    {
+        uptime_message += string(minutes) + " minutes, ";
+    }
+    uptime_message += string(seconds) + " seconds.";
+    return uptime_message;
+}
+string string_join(string[]@ arr, string delimiter, uint start_index = 0, uint end_index = 0)
+{
+    if (end_index == 0 || end_index > arr.length())
+{
+        end_index = arr.length();
+    }
+    string result = "";
+    for (uint i = start_index; i < end_index; i++)
+{
+        result += arr[i];
+        if (i < end_index - 1)
+{
+            result += delimiter;
+        }
+    }
+    return result;
+}
+int get_user_index(int id)
+{
+for(int i=0; i<users.length(); i++)
+{
+if(users[i].peer_id==id)
+return i;
+}
+return -1;
+}
+int get_user_index_from(string name)
+{
+for(int i=0; i<users.length(); i++)
+{
+if(users[i].name==name)
+return i;
+}
+return -1;
+}
+bool filter(string message)
+{
+if(filterstuff==0) return false;
+message=string_to_lower_case(message);
+string[] filter;
+filter.insert_last("re=\\b(\\w+[bdflmnrvzqh])hes([bcdfgjklmnprtw]\\w+)\\b");
+filter.insert_last("re=(\\d):(\\d\\d[snrt][tdh])");
+filter.insert_last("re=([hH])'([bBdDfFjJkKpPtTvVxX]+)'([rR][aAeEiIoOuU]?)");
+filter.insert_last("re=(re|un|non|anti)cosp");
+filter.insert_last("re=(t+)zsche");
+filter.insert_last("re=(anti|non|re|un)caesure");
+filter.insert_last("re=(EUR[A-Z]+)(\\d+)");
+for(int counter=0; counter<filter.length(); counter++)
+{
+string banned=filter[counter];
+if(string_left(banned, 3)=="re=")
+{
+banned=string_trim_left(banned, 3);
+if(regex(message, banned))
+{
+return true;
+}
+}
+if(string_contains(message, filter[counter], 1)>-1)
+{
+return true;
+}
+}
+return false;
+}
+bool filterchar(string message,bool strict=false,string additional="")
+{
+string filter;
+if(!strict) filter="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 !\" $%^&*()-_=+[]{};:'@#\\|,./<>?`~\t\r\n";
+else filter="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_";
+filter+=additional;
+bool found=false;
+for(int counter=0; counter<message.length(); counter++)
+{
+found=false;
+for(int search=0; search<filter.length(); search++)
+{
+if(message[counter]==filter[search])
+{
+found=true;
+break;
+}
+}
+if(!found)
+{
+return true;
+}
+}
+return false;
+}
+void login(string name, double ver)
+{
+bool cont=true;
+for(uint i=0; i<users.length(); i++)
+{
+if(users[i].name==name)
+{
+send(event.peer_id,"error: a person with that name is already logged in",0,true);
+cont=false;
+}
+}
+if(users.length()>=userlimit)
+{
+cont=false;
+send(event.peer_id, "error: the server has exceeded the limit. the maximum number of users is "+userlimit, 0,true);
+}
+if(cont==true)
+{
+send(event.peer_id, "done", 0,true);
+}
+}
+void netloop()
+{
+event = net.request();
+int index=get_user_index(event.peer_id);
+if(writetimer.elapsed>writetime)
+{
+writetimer.restart();
+writeprefs();
+}
+if(key_pressed(KEY_ESCAPE))
+{
+exit();
+}
+if(event.type==event_disconnect)
+{
+int index=get_user_index(event.peer_id);
+if(index>-1)
+{
+send(0, "offline "+users[index].name, 0,true);
+users.remove_at(index);
+}
+}
+    if (event.type == event_receive and event.channel == 0 and get_event_message() == "ping_request")
+    {
+        send(event.peer_id, "ping_response", 0, true);
+    }
+if(event.type == event_receive and event.channel == 0)
+{
+    string message = get_event_message();
+    string[] parsed = string_split(message, " ", true);    
+    if(parsed[0] == "/getmotd")
+    {
+        send(event.peer_id, "Message of the Day: " + motd, 0, true);
+    }
+}
+if(event.type == event_receive and event.channel == 0)
+{
+    string message = get_event_message();
+    if(message == "/serveruptime")
+    {
+int uptime_seconds = svruptimer.elapsed / 1000;
+string uptime_message = format_uptime(uptime_seconds);            
+send(event.peer_id, uptime_message, 0, true);
+    }
+}
+if(event.type==event_receive and  event.channel==0)
+{
+int index=get_user_index(event.peer_id);
+string[] parsed=string_split(get_event_message(), " ", true);
+if(parsed[0]=="login")
+{
+login(parsed[1], string_to_number(parsed[2]));
+}
+else  if(parsed[0]=="spawn_user" and parsed.length()>2)
+{
+bool spawnable=true;
+string n=parsed[1];
+for(uint i=0; i<users.length(); i++)
+{
+if(users[i].name==n)
+{
+spawnable=false;
+}
+}
+if(spawnable==true)
+{
+spawn_user(event.peer_id, parsed[1], string_to_number(parsed[2]));
+int index=get_user_index(event.peer_id);
+send(0, "online "+users[index].name, 0,true);
+}
+}
+else if(parsed[0]=="disconnect")
+{
+int index=get_user_index(event.peer_id);
+if(index>-1)
+{
+send(0, "offline "+users[index].name, 0,true);
+send(users[index].peer_id, "terminate", 0,true);
+users.remove_at(index);
+}
+}
+if(index>-1)
+{
+if(parsed[0]=="welcome")
+{
+send(event.peer_id, "play welcome.ogg", 0,true);
+send(event.peer_id, "welcome to chat. server version "+version, 0,true);
+}
+if(parsed[0]=="dev")
+{
+users[index].admin=true;
+send(users[index].peer_id, "you are a developer now.", 0,true);
+}
+if(parsed[0]=="who")
+{
+int number_online=users.length();
+string list;
+for(uint i=0; i<users.length(); i++)
+{
+list+=users[i].name+",";
+}
+send(event.peer_id, "there are currently "+users.length()+" users on the server. they are: "+list, 0,true);
+}
+}
+}
+if(event.type == event_receive && event.channel == 1)
+{
+    string message = get_event_message();
+    bool messend = true;
+    int index = get_user_index(event.peer_id);    
+    if(index > -1)
+{
+        if(message.length() > 0)
+{
+            if(users[index].messagetimer.elapsed < 50) messend = false;            
+            if(filter(get_event_message()))
+{
+                send(event.peer_id, "Your message contains forbidden words", 1, true);
+                messend = false;
+                return;
+            }
+            if(message[0] == "/")
+{
+                messend = false;
+                string[] parsed = string_split(message, " ", true);
+                if(parsed[0] == "/exit" && users[index].admin)
+{
+                    send(0, "The server is going down for maintenance. Exiting all users...", 0, true);
+                    wait(3000);
+                    send(0, "kill", 0, true);
+                    wait(3000);
+                    speak("Exiting server");
+                    exit();
+                }
+else if(parsed[0] == "/motd" && users[index].admin)
+{
+    if(parsed.length() > 1)
+    {
+        motd = string_replace(get_event_message(), "/motd ", "", true);
+        file f;
+        f.open("server.motd", "w");
+        f.write(motd);
+        f.close();
+        send(0, "Message of the Day has been changed to: " + motd, 0, true);
+                    send(0, "play newmotd.ogg", 0, true);
+    }
+    else
+    {
+        send(event.peer_id, "Usage: /motd <new_message>", 0, true);
+    }
+}
+                 else if(parsed[0] == "/pm" && parsed.length() >= 3)
+{
+                    string target_user = parsed[1];
+                    string pm_message = string_join(parsed, " ", 2, parsed.length());
+                    int target_index = get_user_index_from(target_user);
+                    if(target_index > -1)
+{
+send(event.peer_id, "PM to " + target_user + ": " + pm_message, 2, true);
+send(users[target_index].peer_id, "PM from " + users[index].name + ": " + pm_message, 2, true);
+                    }
+else
+{
+                        send(event.peer_id, "User not found", 2, true);
+                    }
+                }
+            }
+        }
+        if(messend == true)
+{
+            users[index].messagetimer.restart();
+            string what;
+            what += users[index].name + ": " + message;
+            send(0, what, 1, true);
+        }
+    }
+}
+}

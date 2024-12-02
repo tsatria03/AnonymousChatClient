@@ -1,0 +1,26 @@
+bool regex(string message, string pattern)
+{
+library re;
+if(!re.load("filter.dll"))
+{
+return false;
+}
+int handle=-1;
+int rex=-1;
+int matches=-1;
+dictionary@ result=re.call("int regex_create();");
+result.get("0", handle);
+@result=re.call("int result_create();");
+result.get("0", rex);
+re.call("void regex_compile(int, char*, int);", handle, pattern, 0);
+re.call("void regex_match(int, char*, int, int);", handle, message, -1, rex);
+@result=re.call("int result_ismatched(int);", rex);
+result.get("0", matches);
+re.call("void result_free(int);", rex);
+re.call("void regex_free(int);", handle);
+if(matches>0)
+{
+return true;
+}
+return false;
+}

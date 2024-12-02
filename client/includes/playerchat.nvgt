@@ -1,0 +1,200 @@
+void livechat()
+{
+send(0, "spawn_user "+name+" "+version, 0,true);
+send(0, "getversion", 0,true);
+send(0, "welcome", 0,true);
+if(!SCRIPT_COMPILED) send(0, "dev", 0,true);
+while(true)
+{
+netloop();
+wait(5);
+if(key_pressed(KEY_F1))
+{
+send(0,"who",0,true);
+}
+        if(key_pressed(KEY_F2))
+        {
+send(0, "/serveruptime", 0, true);
+        }
+        if(key_pressed(KEY_F3))
+        {
+            pingtimer.restart();
+            send(0, "ping_request", 0, true);
+            speak("Pinging the server...");
+        }
+        if(key_pressed(KEY_F4))
+        {
+send(0, "/getmotd", 0, true);
+        }
+if(key_pressed(KEY_SLASH))
+{
+chatconsole();
+}
+if(key_pressed(KEY_ESCAPE))
+{
+leavechat();
+}
+if(key_pressed(KEY_COMMA))
+{
+if(key_down(KEY_LSHIFT) or key_down(KEY_RSHIFT))
+{
+top_history();
+}
+else 
+{
+prev_chat();
+}
+}
+if(key_pressed(KEY_PERIOD))
+{
+if(key_down(KEY_LSHIFT) or key_down(KEY_RSHIFT))
+{
+bottom_history();
+}
+else
+{
+next_chat();
+}
+}
+}
+}
+void chatconsole()
+{
+speak("enter a message to send.");
+string message;
+int cursor=0;
+string[] chat;
+get_characters();
+while(true)
+{
+netloop();
+string char=get_characters();
+wait(5);
+if(key_down(KEY_LCONTROL)||key_down(KEY_RCONTROL))
+{
+if(key_pressed(KEY_C))
+{
+string vlad;
+if(chat.length()>0)
+for(int i=0; i<chat.length(); i++)
+{
+vlad+=chat[i];
+}
+speak("text copied");
+clipboard_copy_text(vlad);
+}
+if(key_pressed(KEY_V))
+{
+string text=clipboard_read_text();
+for(int i=0; i<text.length(); i++)
+{
+chat.insert_at(cursor, text[i]);
+cursor+=1;
+speak("text pasted");
+}
+}
+}
+if(char!="")
+{
+if(v.charrepeat==1)
+speak(char);
+chat.insert_at(cursor, char);
+cursor+=1;
+}
+if(key_pressed(KEY_BACK) and chat.length()>0 and cursor<=chat.length())
+{
+if(cursor>0)
+{
+string char=chat[cursor-1];
+speak(char);
+chat.remove_at(cursor-1);
+cursor-=1;
+}
+else
+speak("blank");
+}
+if(key_pressed(KEY_DELETE) and chat.length()>0 and cursor>=0 and cursor<chat.length()-1)
+{
+string char=chat[cursor+1];
+if(v.charrepeat==1)
+speak(char);
+chat.remove_at(cursor+1);
+}
+if(key_pressed(KEY_RIGHT) and chat.length()>0 and cursor<chat.length())
+{
+if(cursor<chat.length())
+{
+cursor+=1;
+if(cursor>=chat.length())
+speak("blank");
+else speak(chat[cursor]);
+}
+else
+speak("blank");
+}
+if(key_pressed(KEY_LEFT) and cursor>0 and chat.length()>0)
+{
+if(cursor>0)
+{
+cursor-=1;
+string char=chat[cursor];
+speak(char);
+}
+}
+if(key_pressed(KEY_ESCAPE))
+{
+speak("canceled");
+return;
+}
+if(key_pressed(KEY_F2))
+{
+if(v.charrepeat==1)
+{
+v.charrepeat=0;
+speak("character repeat off");
+}
+else
+{
+v.charrepeat=1;
+speak("character repeat on");
+}
+}
+if(key_pressed(KEY_RETURN))
+{
+if(chat.length()>0)
+{
+for(uint i=0; i<chat.length(); i++)
+message+=chat[i];
+if(string_replace(message, "/", "", true)=="" or string_replace(message, " ", "", true)=="")
+return;
+else send(0, message, 1,true);
+return;
+}
+if(chat.length()==0)
+{
+speak("canceled");
+return;
+}
+}
+if(key_pressed(KEY_UP) or key_pressed(KEY_DOWN))
+{
+string vlad;
+if(chat.length()>0)
+{
+for(int i=0; i<chat.length(); i++)
+{
+vlad+=chat[i];
+}
+speak(vlad);
+}
+}
+wait(5);
+}
+}
+
+void leavechat()
+{
+send(0, "disconnect", 0,true);
+exittimer.restart();
+exiting=true;
+}

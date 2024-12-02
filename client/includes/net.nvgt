@@ -1,0 +1,188 @@
+const int port=25562;
+const string ip="localhost";
+bool encrypting=true, connected, terminating, exiting;
+timer connectiontimer, pingtimer, terminating_timer, exittimer;
+int connectingtime=10000, terminating_time=1500, exittime=300;
+network net;
+network_event event;
+bool send(int peer_id,string packet,int channel,bool reliable)
+{
+if(encrypting)
+{
+packet=string_encrypt(packet,"rscs123");
+}
+if(reliable)
+{
+return net.send_reliable(peer_id,packet,channel);
+}
+else
+{
+return net.send_unreliable(peer_id,packet,channel);
+}
+}
+string get_event_message()
+{
+if(encrypting) return string_decrypt(event.message, "rscs123");
+else return event.message;
+}
+string format_uptime(int uptime_seconds)
+{
+    int days = uptime_seconds / 86400;
+    int hours = (uptime_seconds % 86400) / 3600;
+    int minutes = (uptime_seconds % 3600) / 60;
+    int seconds = uptime_seconds % 60;
+    string uptime_message = "Server Uptime: ";
+    if (days > 0)
+    {
+        uptime_message += string(days) + " days, ";
+    }
+    if (hours > 0 || days > 0)
+    {
+        uptime_message += string(hours) + " hours, ";
+    }
+    if (minutes > 0 || hours > 0 || days > 0)
+    {
+        uptime_message += string(minutes) + " minutes, ";
+    }
+    uptime_message += string(seconds) + " seconds.";
+    return uptime_message;
+}
+string string_join(string[]@ arr, string delimiter, uint start_index = 0, uint end_index = 0)
+{
+    if (end_index == 0 || end_index > arr.length())
+{
+        end_index = arr.length();
+    }
+    string result = "";
+    for (uint i = start_index; i < end_index; i++)
+{
+        result += arr[i];
+        if (i < end_index - 1)
+{
+            result += delimiter;
+        }
+    }
+    return result;
+}
+void login()
+{
+if(name=="")
+{
+dlg("error! You may not login with no name. Please go to settings and set your name!");
+mainmenu();
+}
+else
+{
+speak("Attempting to connect...");
+net.connect(ip, port);
+connectiontimer.restart();
+while(true)
+{
+event=net.request();
+wait(5);
+if(connectiontimer.elapsed>=connectingtime and connected==false or event.type==event_disconnect)
+{
+alert("error","server lost");
+connectiontimer.restart();
+mainmenu();
+}
+else if(event.type==event_connect and connected==false)
+{
+speak("logging in");
+send(0, "login "+name+" "+version, 0,true);
+connected=true;
+}
+if(event.type==event_receive and get_event_message()=="done")
+{
+livechat();
+}
+else if(event.type==event_receive and string_contains(get_event_message(), "error:", 1)>-1)
+{
+dlg(get_event_message());
+connected=false;
+mainmenu();
+}
+}
+}
+}
+void netloop()
+{
+    event = net.request();    
+    if (event.type == event_receive and event.channel == 0 and get_event_message() == "ping_response")
+    {
+        double ping_time = pingtimer.elapsed;
+        speak("Ping: " + round(ping_time, 2) + " ms");
+    }
+if(event.type == event_receive and event.channel == 0)
+{
+    string message = get_event_message();
+    if(string_left(message, 15) == "Server Uptime: ")
+    {
+        speak(message);
+    }
+}
+    if (terminating == true and terminating_timer.elapsed >= terminating_time)
+{
+        terminating_timer.restart();
+        terminating = false;
+        connected = false;
+        mainmenu();
+    }
+    else if (exiting == true and exittimer.elapsed >= exittime)
+{
+        exittimer.restart();
+        exiting = false;
+        connected = false;
+        mainmenu();
+    }
+if (event.type == event_receive and event.channel == 0)
+{
+    string[] parsed = string_split(get_event_message(), " ", true);    
+    if (parsed[0] == "play")
+{
+        p.play_stationary(parsed[1], false);
+    } 
+    else if (parsed[0] == "online")
+{
+p.play_stationary("online.ogg",false);
+        string msg;
+        for (uint i = 1; i < parsed.length(); i++)
+{
+            msg += parsed[i] + " just came online";
+        }
+        speak(msg);
+    } 
+    else if (parsed[0] == "offline")
+{
+p.play_stationary("offline.ogg",false);
+        string msg = parsed[1] + " just went offline";
+        speak(msg);
+    } 
+    else if (parsed[0] == "terminate")
+{
+        terminating_timer.restart();
+        exiting = false;
+        terminating = true;
+    } 
+    else if (parsed[0] == "kill")
+{
+        send(0, "disconnect", 0, true);
+        exit();
+    } 
+    else
+{
+        speak(get_event_message());
+    }
+}
+    if (event.type == event_receive and event.channel == 1)
+{
+        add_chat(get_event_message());
+p.play_stationary("chat.ogg",false);
+    }
+    if (event.type == event_receive and event.channel == 2)
+{
+        string message = get_event_message();
+        add_chat(message);
+p.play_stationary("pm.ogg",false);
+    }
+}

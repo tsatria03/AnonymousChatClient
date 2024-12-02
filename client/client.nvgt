@@ -1,0 +1,118 @@
+#include"bgt_compat.nvgt"
+#include"sound_pool.nvgt"
+#include"speech.nvgt"
+#include"includes/buffer.nvgt"
+#include"includes/net.nvgt"
+#include"includes/playerchat.nvgt"
+#include"includes/dlg.nvgt"
+#include"includes/key_hold.nvgt"
+#include"includes/m_pro.nvgt"
+#include"includes/virtualizer.nvgt"
+int menuscroll=1;
+string motd = "Welcome to the server.";
+string passc="rscs123";
+string name="noName"+random(0,9999);
+string version="1.5";
+dynamic_menu_pro menu;
+sound_pool p;
+virtualizer v;
+void main()
+{
+show_game_window("anonymous  chat client, running on version "+version);
+set_sound_storage("sounds.dat");
+set_sound_decryption_key("f298guen4g8z7th7np",true);
+net.setup_client(5, 500);
+mainmenu();
+}
+void setupmenu(bool music=false)
+{
+menu.reset(false);
+menu.allow_escape=true;
+menu.wrap=false;
+menu.enable_home_and_end=true;
+menu.click_sound="menuclick.ogg";
+menu.enter_sound="menuenter.ogg";
+if(menuscroll==1)
+{
+menu.enable_side_scrolling=true;
+menu.enable_up_and_down=false;
+menu.enable_left_and_right=true;
+}
+else
+{
+menu.enable_side_scrolling=false;
+menu.enable_left_and_right=false;
+menu.enable_up_and_down=true;
+}
+}
+void mainmenu()
+{
+setupmenu(true);
+menu.add_item_tts("connect","livechat");
+menu.add_item_tts("settings", "options");
+menu.add_item_tts("exit","ex");
+int result=menu.run("main menu", true);
+if(result==0 or menu.get_item_name(result)=="ex")
+{
+wait(500);
+exit();
+}
+else if(menu.get_item_name(result)=="options")
+{
+settings_menu();
+}
+else if(menu.get_item_name(result)=="livechat")
+{
+speak("connecting to server.");
+login();
+}
+}
+void settings_menu()
+{
+setupmenu(true);
+string temp;
+if(name=="")
+{
+temp="set name";
+}
+else
+temp="your name is set to "+name+". press enter to change it";
+menu.add_item_tts(temp, "setname");
+if(menuscroll==0)
+menu.add_item_tts("enable menu side scrolling", "esc");
+else if(menuscroll==1)
+menu.add_item_tts("disable menu side scrolling", "dsc");
+menu.add_item_tts("go back", "back");
+int result=menu.run("settings menu", true);
+if(result==0 or menu.get_item_name(result)=="back") mainmenu();
+else if(menu.get_item_name(result)=="setname") setname();
+else if(menu.get_item_name(result)=="esc")
+{
+menuscroll=1;
+settings_menu();
+}
+else if(menu.get_item_name(result)=="dsc")
+{
+menuscroll=0;
+settings_menu();
+}
+}
+void setname()
+{
+string name2=v.input("enter your name to be set");
+if(string_contains(name2," ",1)>-1)
+{
+dlg("Your name must not have spaces!");
+mainmenu();
+}
+if(name2=="")
+{
+mainmenu();
+}
+else
+{
+name=name2;
+dlg("success: you have set your name to "+name);
+mainmenu();
+}
+}

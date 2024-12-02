@@ -1,0 +1,21 @@
+user@[] users;
+class user
+{
+string name;
+int peer_id;
+timer messagetimer;
+double version;
+bool admin;
+user(int id, string username, double ver)
+{
+name=username;
+peer_id=id;
+version=ver;
+messagetimer.force(9000);
+}
+}
+void spawn_user(int id, string name, double version)
+{
+user user1(id, name, version);
+users.insert_last(user1);
+}

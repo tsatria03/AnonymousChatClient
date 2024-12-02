@@ -1,0 +1,19 @@
+sound dlg_sound;
+void dlg(string message)
+{
+dlg_sound.load("message.ogg");
+dlg_sound.play();
+speak(message);
+while(true)
+{
+wait(5);
+if (key_pressed(KEY_LEFT) or key_pressed(KEY_RIGHT) or key_pressed(KEY_UP) or key_pressed(KEY_DOWN))
+{
+speak(message);
+}
+if (key_pressed(KEY_RETURN) or key_pressed(KEY_ESCAPE))
+{
+break;
+}
+}
+}

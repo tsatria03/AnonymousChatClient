@@ -245,7 +245,7 @@ if(index>-1)
 if(parsed[0]=="welcome")
 {
 send(event.peer_id, "play welcome.ogg", 0,true);
-send(event.peer_id, "welcome to chat. server version "+version, 0,true);
+send(event.peer_id, "welcome to the anonymous chat server. server version "+version, 0,true);
 }
 if(parsed[0]=="dev")
 {

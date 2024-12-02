@@ -10,30 +10,29 @@ Added better time calculation to the server uptime feature so it can be more pre
 Fixed runtime errors related to network events and message handling.
 Addressed some issues where message parsing and event handling would cause unexpected behavior or crashes.
 new in 1.4
-Updated the server event handling functions to better track user activity, such as login and disconnect. This provides more responsive feedback to all users on the server.
+Updated the server event handling function to better track user activity, such as login and disconnect. This provides more responsive feedback to all users on the server.
 The feature for playing sounds directly from the server such as for notifications or events has been removed. All sound-playing commands and related sound resources has been deprecated and removed from the server-side scripts.
-Removed the voice chat feature entirely due to certain issues not being able to be fixed with the functionality. All related code for voice recording, playback, and transmission from the client to the server has now been removed.
+Removed the voice chat feature entirely due to certain issues not being able to be fixed. All related code for voice recording, playback, and transmission from the client to the server has now been removed.
 new in 1.3
 Added a basic filtering system to the server for banning certain words or phrases written in chat.
 Added better formatting and error handling for message sending and reception.
 Made some adjustments for showing the server uptime dynamically, reflecting the accurate time intervals in days, hours, minutes, and seconds.
 new in 1.2
 You can now press the F3 key to send a ping request message to the server to measure the average round-trip time.
-Added a ping request functionality for calculating the latency of the server.
+Added a ping request function for calculating the latency of the server.
 You can now press the F2 key to request the server's uptime. The server's uptime will be displayed in a human-readable format such as days, hours, minutes, and seconds.
-Added Server Uptime functionality to keep track of how long the server has been up for.
+Added a Server Uptime function to keep track of how long the server has been up for.
 new in 1.1
 You can now press the F4 key to request the MOTD from the server.
-Added a server-side functionality for admins to modify the MOTD via the /motd command.
+Added a server-side function for admins to modify the MOTD via the /motd command.
 The server now reads the message of the day from a file and transmits it to clients on request.
 Enhanced client-server message handling, allowing both general and private messages to be routed through specific channels.
 Updated Peer management functions for managing the player list, login functionality, and player states such as going online and offline.
 New in 1.0
 You can no longer have names with spaces!
-Voice clips will no longer play simultaneously. Once a voice/sound clip is received, the old one stops and a new one plays.
-Installs a keyhook for jaws users.
+Voice clips will no longer play simultaneously. Once a voice/sound clip is received, the old one stops, and a new one plays.
 Adds a timer for uploading sounds to the server to 30 seconds.
-Added Sound playback functionality for chat related notifications.
-Implemented Server-side message of the Day,. MOTD for short.
-Added a basic menu navigation system and the ability to post messages in the chat.
-Added a basic client-server communication setup for messaging and player chat.
+Added Sound playback functions for chat related notifications.
+Implemented Server-side message of the Day. MOTD for short.
+Added a basic menu navigation system and the ability to send messages in the chat.
+Added a basic client-server communication setup for messaging and reading player chats.

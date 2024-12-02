@@ -1,7 +1,5 @@
 bool encryption=true;
 int filterstuff=1;
-int port=25562;
-int userlimit=200;
 int writetime=10000;
 timer writetimer;
 network net;
@@ -184,7 +182,7 @@ users.remove_at(index);
     if (event.type == event_receive and event.channel == 0 and get_event_message() == "ping_request")
     {
         send(event.peer_id, "ping_response", 0, true);
-    }
+}
 if(event.type == event_receive and event.channel == 0)
 {
     string message = get_event_message();

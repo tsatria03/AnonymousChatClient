@@ -1,4 +1,6 @@
 new in 1.6
+Added buffer clearing functions to the buffer class. The clear_all_buffer_items function helps to clear items within a buffer, preventing unnecessary exports of old data when exporting buffers to various log files.
+Introduced a more advanced and flexible buffer system to handle various message types in the chat client. The system includes multiple buffer categories such as alerts, chats, and pm's, which allow messages to be sorted based on their type.
 Made some more code optimizations on the server.
 Removed the ability to perform web related actions, such as viewing comments, posting comments, and watching server related events as they come in.
 Removed the ability to save client prefferences to a file.

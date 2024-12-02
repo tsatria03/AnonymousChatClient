@@ -113,12 +113,29 @@ void netloop()
         double ping_time = pingtimer.elapsed;
         speak("Ping: " + round(ping_time, 2) + " ms");
     }
-if(event.type == event_receive and event.channel == 0)
+if (event.type == event_receive and event.channel == 0)
 {
     string message = get_event_message();
-    if(string_left(message, 15) == "Server Uptime: ")
+    if (string_left(message, 6) == "online")
     {
+        add_buffer_item("connections", message);
+        p.play_stationary("online.ogg", false);
         speak(message);
+    }
+    else if (string_left(message, 7) == "offline")
+    {
+        add_buffer_item("connections", message);
+        p.play_stationary("offline.ogg", false);
+        speak(message);
+    }
+}
+if (event.type == event_receive and event.channel == 0)
+{
+    string message = get_event_message();
+    if (string_left(message, 15) == "Server Uptime: ")
+    {
+        add_buffer_item("misc", message);
+        speak(message);  // Notify the client
     }
 }
     if (terminating == true and terminating_timer.elapsed >= terminating_time)
@@ -174,15 +191,16 @@ p.play_stationary("offline.ogg",false);
         speak(get_event_message());
     }
 }
-    if (event.type == event_receive and event.channel == 1)
+if (event.type == event_receive and event.channel == 1)
 {
-        add_chat(get_event_message());
-p.play_stationary("chat.ogg",false);
-    }
-    if (event.type == event_receive and event.channel == 2)
+    string message = get_event_message();
+    add_buffer_item("chats", message);
+    p.play_stationary("chat.ogg", false);
+}
+if (event.type == event_receive and event.channel == 2)
 {
-        string message = get_event_message();
-        add_chat(message);
-p.play_stationary("pm.ogg",false);
-    }
+    string message = get_event_message();
+    add_buffer_item("pm's", message);
+    p.play_stationary("pm.ogg", false);
+}
 }

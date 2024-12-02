@@ -14,11 +14,42 @@ string passc="rscs123";
 string name="noName"+random(0,9999);
 string version="1.6";
 dynamic_menu_pro menu;
+file logfile;
 sound_pool p;
 virtualizer v;
+bool alt_is_down()
+{
+if(key_down(KEY_LMENU) or key_down(KEY_RMENU))
+{
+return true;
+}
+return false;
+}
+bool control_is_down()
+{
+if(key_down(KEY_LCONTROL) or key_down(KEY_RCONTROL))
+{
+return true;
+}
+return false;
+}
+bool shift_is_down()
+{
+if(key_down(KEY_LSHIFT) or key_down(KEY_RSHIFT))
+{
+return true;
+}
+return false;
+}
 void main()
 {
 show_game_window("anonymous  chat client, running on version "+version);
+create_buffer("alerts");
+create_buffer("chats");
+create_buffer("connections");
+create_buffer("pm's");
+create_buffer("player events");
+create_buffer("misc");
 set_sound_storage("sounds.dat");
 set_sound_decryption_key("f298guen4g8z7th7np",true);
 net.setup_client(5, 500);
@@ -28,10 +59,11 @@ void setupmenu(bool music=false)
 {
 menu.reset(false);
 menu.allow_escape=true;
-menu.wrap=false;
+menu.wrap=true;
 menu.enable_home_and_end=true;
 menu.click_sound="menuclick.ogg";
 menu.enter_sound="menuenter.ogg";
+menu.open_sound="menuopen.ogg";
 if(menuscroll==1)
 {
 menu.enable_side_scrolling=true;
